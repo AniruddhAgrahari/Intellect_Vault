@@ -1,14 +1,12 @@
 # 🧠 Intellect-Vault: Advanced RAG System
 
-Intellect-Vault is a high-performance "Chat with your Documents" platform built using **Google Gemini**, **LangChain**, and **ChromaDB**. It allows users to upload complex PDFs and interact with them through a conversational interface with 100% source transparency.
+Intellect-Vault is a high-performance "Chat with your Documents" platform built using **Google Gemini**, **LangChain**, and **ChromaDB**. It allows users to upload complex PDFs and interact with them through natural language queries—delivering accurate, citation-backed answers instantly.
 
-## 🚀 Key Features
-
-- **Google Gemini 1.5 Pro**: Leverages a massive context window for deep document understanding.
-- **Conversational RAG**: Supports multi-turn conversations, remembering context across questions.
-- **No-Hallucination Citations**: Every answer includes precise citations (Filename & Page Number).
-- **Interactive UI**: Real-time processing status and expandable source highlighting.
-- **Local Vector Storage**: Uses ChromaDB for fast, persistent, and private vector search.
+## 🚀 Features
+- **Hybrid RAG:** Local embeddings (HuggingFace) + High-speed LLM (Groq Llama 3).
+- **Source Attribution:** Every answer is cited directly from the PDF source.
+- **Zero API Costs:** Built to run efficiently without expensive embedding quotas.
+- **Context-Aware:** Handles large documents using recursive character chunking.
 
 ## 🏗️ System Architecture
 
