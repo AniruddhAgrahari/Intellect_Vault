@@ -1,0 +1,13 @@
+streamlit
+langchain==0.3.7
+langchain-community==0.3.7
+langchain-core==0.3.18
+langchain-google-genai==2.0.0
+langchain-groq==0.2.1
+google-generativeai
+chromadb
+pypdf
+python-dotenv
+tiktoken
+sentence-transformers
+tenacity
