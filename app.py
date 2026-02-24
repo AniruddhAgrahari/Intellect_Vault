@@ -2,7 +2,7 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 from src.ingestion import load_pdf, split_documents
-from src.vectorstore import get_vectorstore, load_existing_vectorstore
+from src.vectorstore import get_vectorstore
 from src.retrieval import get_qa_chain
 import uuid
 
