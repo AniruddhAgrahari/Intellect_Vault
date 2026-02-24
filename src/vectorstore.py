@@ -1,6 +1,7 @@
 import os
 import time
 from typing import List
+from functools import lru_cache
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
@@ -50,6 +51,24 @@ class BatchedGoogleEmbeddings:
         return self.embeddings.embed_query(text)
 
 
+@lru_cache(maxsize=1)
+def get_hf_embeddings(model_name="sentence-transformers/all-MiniLM-L6-v2", device='cpu'):
+    """Returns a cached instance of HuggingFaceEmbeddings."""
+    return HuggingFaceEmbeddings(
+        model_name=model_name,
+        model_kwargs={'device': device}
+    )
+
+@lru_cache(maxsize=1)
+def get_google_embeddings(model="models/embedding-001", batch_size=5, delay=2):
+    """Returns a cached instance of BatchedGoogleEmbeddings."""
+    return BatchedGoogleEmbeddings(
+        model=model,
+        batch_size=batch_size,
+        delay=delay
+    )
+
+
 def get_vectorstore(documents: List[Document], persist_directory="chroma_db", use_local=True):
     """
     Creates or loads a Chroma vector store from documents.
@@ -61,17 +80,10 @@ def get_vectorstore(documents: List[Document], persist_directory="chroma_db", us
     """
     if use_local:
         print("🔧 Using local embeddings (no API required)")
-        embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={'device': 'cpu'}
-        )
+        embeddings = get_hf_embeddings()
     else:
         print("🌐 Using Google Gemini embeddings with batching and retry logic")
-        embeddings = BatchedGoogleEmbeddings(
-            model="models/embedding-001",
-            batch_size=5,
-            delay=2
-        )
+        embeddings = get_google_embeddings()
     
     try:
         vectorstore = Chroma.from_documents(
@@ -92,11 +104,8 @@ def get_vectorstore(documents: List[Document], persist_directory="chroma_db", us
 def load_existing_vectorstore(persist_directory="chroma_db", use_local=True):
     """Loads an existing Chroma vector store."""
     if use_local:
-        embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={'device': 'cpu'}
-        )
+        embeddings = get_hf_embeddings()
     else:
-        embeddings = BatchedGoogleEmbeddings(model="models/embedding-001")
+        embeddings = get_google_embeddings()
     
     return Chroma(persist_directory=persist_directory, embedding_function=embeddings)
