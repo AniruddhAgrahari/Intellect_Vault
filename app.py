@@ -1,10 +1,9 @@
 import streamlit as st
 import os
 from dotenv import load_dotenv
-from src.ingestion import load_pdf, split_documents
+from src.ingestion import load_pdf, split_documents, secure_temp_file
 from src.vectorstore import get_vectorstore, load_existing_vectorstore
 from src.retrieval import get_qa_chain
-import uuid
 
 # Configuration
 MAX_SIZE = 10 * 1024 * 1024  # 10MB
@@ -34,24 +33,21 @@ with st.sidebar:
         elif st.button("Process Document"):
             with st.status("Vectorizing Document...", expanded=True) as status:
                 st.write("Loading PDF...")
-                temp_filename = f"temp_{uuid.uuid4()}.pdf"
-                with open(temp_filename, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
                 
-                st.write("Splitting text into chunks...")
-                docs = load_pdf(temp_filename)
-                for doc in docs:
-                    doc.metadata["source"] = uploaded_file.name
+                with secure_temp_file(uploaded_file.getbuffer()) as temp_filename:
+                    st.write("Splitting text into chunks...")
+                    docs = load_pdf(temp_filename)
+                    for doc in docs:
+                        doc.metadata["source"] = uploaded_file.name
+
+                    chunks = split_documents(docs)
+
+                    st.write("Generating embeddings and indexing...")
+                    vectorstore = get_vectorstore(chunks)
+
+                    st.session_state.vectorstore = vectorstore
+                    st.session_state.processed = True
                 
-                chunks = split_documents(docs)
-                
-                st.write("Generating embeddings and indexing...")
-                vectorstore = get_vectorstore(chunks)
-                
-                st.session_state.vectorstore = vectorstore
-                st.session_state.processed = True
-                
-                os.remove(temp_filename)
                 status.update(label="Document processed and indexed!", state="complete", expanded=False)
 
 # Chat Interface
