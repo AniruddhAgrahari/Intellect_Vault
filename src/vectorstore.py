@@ -50,28 +50,35 @@ class BatchedGoogleEmbeddings:
         return self.embeddings.embed_query(text)
 
 
-def get_vectorstore(documents: List[Document], persist_directory="chroma_db", use_local=True):
+def get_embeddings(use_local: bool = True):
     """
-    Creates or loads a Chroma vector store from documents.
-    
-    Args:
-        documents: List of documents to embed
-        persist_directory: Directory to persist the vector store
-        use_local: If True, use local HuggingFace embeddings instead of Google API (default: True)
+    Returns the appropriate embedding model based on the use_local flag.
     """
     if use_local:
         print("🔧 Using local embeddings (no API required)")
-        embeddings = HuggingFaceEmbeddings(
+        return HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={'device': 'cpu'}
         )
     else:
         print("🌐 Using Google Gemini embeddings with batching and retry logic")
-        embeddings = BatchedGoogleEmbeddings(
+        return BatchedGoogleEmbeddings(
             model="models/embedding-001",
             batch_size=5,
             delay=2
         )
+
+
+def get_vectorstore(documents: List[Document], persist_directory="chroma_db", use_local=True):
+    """
+    Creates or loads a Chroma vector store from documents.
+
+    Args:
+        documents: List of documents to embed
+        persist_directory: Directory to persist the vector store
+        use_local: If True, use local HuggingFace embeddings instead of Google API (default: True)
+    """
+    embeddings = get_embeddings(use_local)
     
     try:
         vectorstore = Chroma.from_documents(
@@ -91,12 +98,5 @@ def get_vectorstore(documents: List[Document], persist_directory="chroma_db", us
 
 def load_existing_vectorstore(persist_directory="chroma_db", use_local=True):
     """Loads an existing Chroma vector store."""
-    if use_local:
-        embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={'device': 'cpu'}
-        )
-    else:
-        embeddings = BatchedGoogleEmbeddings(model="models/embedding-001")
-    
+    embeddings = get_embeddings(use_local)
     return Chroma(persist_directory=persist_directory, embedding_function=embeddings)
