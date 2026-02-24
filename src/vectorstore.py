@@ -1,4 +1,3 @@
-import os
 import time
 from typing import List
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
