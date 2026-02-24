@@ -1,5 +1,6 @@
 import os
 import time
+from functools import lru_cache
 from typing import List
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -50,6 +51,7 @@ class BatchedGoogleEmbeddings:
         return self.embeddings.embed_query(text)
 
 
+@lru_cache(maxsize=2)
 def get_embeddings(use_local: bool = True):
     """
     Returns the appropriate embedding model based on the use_local flag.
