@@ -81,7 +81,7 @@ if prompt := st.chat_input("Ask a question about your document..."):
         with st.chat_message("assistant"):
             with st.spinner("Analyzing document..."):
                 qa_chain = get_qa_chain(st.session_state.vectorstore)
-                response = qa_chain({
+                response = qa_chain.invoke({
                     "question": prompt, 
                     "chat_history": st.session_state.chat_history
                 })
