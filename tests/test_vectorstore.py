@@ -49,7 +49,10 @@ class TestVectorStore(unittest.TestCase):
             model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={'device': 'cpu'}
         )
-        mock_chroma.assert_called_once()
+        mock_chroma.assert_called_once_with(
+            persist_directory="chroma_db",
+            embedding_function=mock_huggingface.return_value
+        )
 
     @patch('src.vectorstore.BatchedGoogleEmbeddings')
     @patch('src.vectorstore.Chroma')
@@ -61,7 +64,25 @@ class TestVectorStore(unittest.TestCase):
             batch_size=5,
             delay=2
         )
-        mock_chroma.assert_called_once()
+        mock_chroma.assert_called_once_with(
+            persist_directory="chroma_db",
+            embedding_function=mock_google.return_value
+        )
+
+    @patch('src.vectorstore.HuggingFaceEmbeddings')
+    @patch('src.vectorstore.Chroma')
+    def test_load_existing_vectorstore_custom_directory(self, mock_chroma, mock_huggingface):
+        custom_dir = "my_custom_db"
+        load_existing_vectorstore(persist_directory=custom_dir, use_local=True)
+
+        mock_huggingface.assert_called_once_with(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
+            model_kwargs={'device': 'cpu'}
+        )
+        mock_chroma.assert_called_once_with(
+            persist_directory=custom_dir,
+            embedding_function=mock_huggingface.return_value
+        )
 
 if __name__ == '__main__':
     unittest.main()
