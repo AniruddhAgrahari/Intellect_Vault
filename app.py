@@ -6,6 +6,9 @@ from src.vectorstore import get_vectorstore, load_existing_vectorstore
 from src.retrieval import get_qa_chain
 import uuid
 
+# Configuration
+MAX_SIZE = 10 * 1024 * 1024  # 10MB
+
 # Load environment variables
 load_dotenv()
 
@@ -26,7 +29,9 @@ with st.sidebar:
     uploaded_file = st.file_uploader("Upload a PDF file", type="pdf")
     
     if uploaded_file and groq_api_key:
-        if st.button("Process Document"):
+        if uploaded_file.size > MAX_SIZE:
+            st.error(f"File size exceeds the {MAX_SIZE / (1024 * 1024):.0f}MB limit. Please upload a smaller file.")
+        elif st.button("Process Document"):
             with st.status("Vectorizing Document...", expanded=True) as status:
                 st.write("Loading PDF...")
                 temp_filename = f"temp_{uuid.uuid4()}.pdf"
