@@ -35,24 +35,27 @@ with st.sidebar:
             with st.status("Vectorizing Document...", expanded=True) as status:
                 st.write("Loading PDF...")
                 temp_filename = f"temp_{uuid.uuid4()}.pdf"
-                with open(temp_filename, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-                
-                st.write("Splitting text into chunks...")
-                docs = load_pdf(temp_filename)
-                for doc in docs:
-                    doc.metadata["source"] = uploaded_file.name
-                
-                chunks = split_documents(docs)
-                
-                st.write("Generating embeddings and indexing...")
-                vectorstore = get_vectorstore(chunks)
-                
-                st.session_state.vectorstore = vectorstore
-                st.session_state.processed = True
-                
-                os.remove(temp_filename)
-                status.update(label="Document processed and indexed!", state="complete", expanded=False)
+                try:
+                    with open(temp_filename, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
+
+                    st.write("Splitting text into chunks...")
+                    docs = load_pdf(temp_filename)
+                    for doc in docs:
+                        doc.metadata["source"] = uploaded_file.name
+
+                    chunks = split_documents(docs)
+
+                    st.write("Generating embeddings and indexing...")
+                    vectorstore = get_vectorstore(chunks)
+
+                    st.session_state.vectorstore = vectorstore
+                    st.session_state.processed = True
+
+                    status.update(label="Document processed and indexed!", state="complete", expanded=False)
+                finally:
+                    if os.path.exists(temp_filename):
+                        os.remove(temp_filename)
 
 # Chat Interface
 if "messages" not in st.session_state:
