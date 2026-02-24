@@ -11,9 +11,12 @@ sys.modules["langchain_core.documents"] = MagicMock()
 sys.modules["tenacity"] = MagicMock()
 sys.modules["langchain_google_genai._common"] = MagicMock()
 
-from src.vectorstore import get_vectorstore, load_existing_vectorstore
+from src.vectorstore import get_vectorstore, load_existing_vectorstore, get_embeddings
 
 class TestVectorStore(unittest.TestCase):
+
+    def setUp(self):
+        get_embeddings.cache_clear()
 
     @patch('src.vectorstore.HuggingFaceEmbeddings')
     @patch('src.vectorstore.Chroma')
