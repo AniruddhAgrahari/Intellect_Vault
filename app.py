@@ -51,6 +51,10 @@ with st.sidebar:
                 st.session_state.vectorstore = vectorstore
                 st.session_state.processed = True
                 
+                # Clear existing QA chain
+                if "qa_chain" in st.session_state:
+                    del st.session_state["qa_chain"]
+
                 os.remove(temp_filename)
                 status.update(label="Document processed and indexed!", state="complete", expanded=False)
 
@@ -80,7 +84,10 @@ if prompt := st.chat_input("Ask a question about your document..."):
         
         with st.chat_message("assistant"):
             with st.spinner("Analyzing document..."):
-                qa_chain = get_qa_chain(st.session_state.vectorstore)
+                if "qa_chain" not in st.session_state:
+                    st.session_state.qa_chain = get_qa_chain(st.session_state.vectorstore)
+
+                qa_chain = st.session_state.qa_chain
                 response = qa_chain({
                     "question": prompt, 
                     "chat_history": st.session_state.chat_history
